@@ -9,8 +9,21 @@ project-root/
   │   ├── components/        # All reusable UI components
   │   │   └── ui/            # Prebuilt and custom UI components, grouped by function
   │   ├── hooks/             # Custom React hooks
+  │   │   ├── use-mobile.tsx       # Mobile detection hook
+  │   │   ├── use-toast.ts         # Toast notification hook
+  │   │   └── use-timeline-events.ts  # Timeline events management hook
   │   ├── lib/               # Utility functions and libraries
+  │   │   ├── utils.ts             # General utilities
+  │   │   └── timeline-utils.ts    # Timeline-specific utilities
   │   ├── pages/             # Application pages (each page in its own subdirectory)
+  │   │   ├── timeline/            # Main timeline page (一起喝水 app)
+  │   │   │   ├── index.tsx        # Timeline main page
+  │   │   │   ├── TimelineView.tsx # Timeline view component
+  │   │   │   ├── TimeSlot.tsx     # Time slot component
+  │   │   │   ├── EventCard.tsx    # Event card component
+  │   │   │   ├── EventDialog.tsx  # Event dialog component
+  │   │   │   └── types.ts         # Timeline type definitions
+  │   │   └── NotFound.tsx         # 404 page
   │   ├── App.tsx            # Main app component, sets up route providers
   │   ├── router.tsx         # Router config, sets up routing
   │   ├── main.tsx           # Entry point for the React app

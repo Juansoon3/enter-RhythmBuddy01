@@ -1,11 +1,11 @@
-import Index from "./pages/Index";
+import Timeline from "./pages/timeline";
 import NotFound from "./pages/NotFound";
 
 export const routers = [
     {
       path: "/",
       name: 'home',
-      element: <Index />,
+      element: <Timeline />,
     },
     /* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */
     {
