@@ -11,9 +11,11 @@ import { useTimelineEvents } from '@/hooks/use-timeline-events';
 import { getCurrentTime } from '@/lib/timeline-utils';
 
 export default function Timeline() {
-  const { addEvent, updateEvent, deleteEvent } = useTimelineEvents();
+  const { addEvent, updateEvent, deleteEvent, events } = useTimelineEvents();
   const [currentDate] = useState(new Date());
   const [fabDialogOpen, setFabDialogOpen] = useState(false);
+
+  const todayEventsCount = events.length;
 
   const handleFabClick = () => {
     setFabDialogOpen(true);
@@ -44,13 +46,23 @@ export default function Timeline() {
               </div>
             </div>
 
-            {/* 日期显示 */}
-            <Card className="px-4 py-2 flex items-center gap-2 bg-card/50 backdrop-blur">
-              <Calendar className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">
-                {format(currentDate, 'yyyy年MM月dd日')}
-              </span>
-            </Card>
+            {/* 日期显示和统计 */}
+            <div className="flex items-center gap-3">
+              <Card className="px-4 py-2 flex items-center gap-2 bg-card/50 backdrop-blur">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium">
+                  {format(currentDate, 'yyyy年MM月dd日')}
+                </span>
+              </Card>
+              
+              {todayEventsCount > 0 && (
+                <Card className="px-3 py-2 bg-primary/10 border-primary/20">
+                  <span className="text-sm font-semibold text-primary">
+                    {todayEventsCount} 个事项
+                  </span>
+                </Card>
+              )}
+            </div>
           </div>
         </div>
       </header>
