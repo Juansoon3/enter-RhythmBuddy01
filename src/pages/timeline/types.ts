@@ -1,7 +1,7 @@
 // 时间轴事项数据类型定义
 
 export interface TimelineEvent {
-  id: string;                    // 唯一标识
+  id: string;                    // 唯一标识 (UUID from Supabase)
   title: string;                 // 事项名称（7字以内）
   startTime: string;             // 开始时间 (HH:mm格式)
   endTime: string;               // 结束时间 (HH:mm格式)

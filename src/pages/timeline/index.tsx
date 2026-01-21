@@ -21,11 +21,15 @@ export default function Timeline() {
     setFabDialogOpen(true);
   };
 
-  const handleSave = (values: Omit<import('./types').TimelineEvent, 'id'>, eventId?: string) => {
-    if (eventId) {
-      updateEvent(eventId, values);
-    } else {
-      addEvent(values);
+  const handleSave = async (values: Omit<import('./types').TimelineEvent, 'id'>, eventId?: string) => {
+    try {
+      if (eventId) {
+        await updateEvent(eventId, values);
+      } else {
+        await addEvent(values);
+      }
+    } catch (error) {
+      console.error('Failed to save event:', error);
     }
   };
 

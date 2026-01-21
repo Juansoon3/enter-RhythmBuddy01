@@ -40,12 +40,19 @@ project-root/
   - **ui/**: Contains atomic and composite UI components.  
   - *Group related components into subdirectories if they share a domain or feature (e.g., `form/`, `charts/`).*
 - **src/hooks/**: Custom React hooks. Each file should export a single hook focused on one responsibility.
+  - **use-timeline-events.ts**: Manages timeline events with Supabase integration and real-time updates
 - **src/lib/**: Utility functions and libraries that are not React components or hooks.
+  - **timeline-utils.ts**: Timeline-specific utilities for time calculations and event positioning
+- **src/integrations/**: Third-party service integrations
+  - **supabase/**: Supabase client and auto-generated types
 - **src/pages/**: All route-level pages.  
   - *Each page should have its own subdirectory if it contains more than a single file or has related logic/components.*
+  - **timeline/**: Main timeline page for the "一起喝水" app with time management features
 - **src/App.tsx**: Sets up global providers.
 - **src/router.tsx**: Sets up routing.
 - **src/main.tsx**: Application entry point.
+- **supabase/**: Supabase configuration and migrations
+  - **migrations/**: Database migration files
 
 **Important:**
 Whenever a new module (such as a component, hook, or utility) or a new page is added or removed, this document **must be updated immediately** to reflect the changes. Keeping this documentation up to date ensures that all collaborators have a clear understanding of the current project structure and its intended organization.

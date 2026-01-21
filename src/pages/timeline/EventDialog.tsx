@@ -1,6 +1,6 @@
 // 事项编辑对话框组件
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -54,8 +54,8 @@ interface EventDialogProps {
   onOpenChange: (open: boolean) => void;
   event?: TimelineEvent | null;
   defaultTime?: string;
-  onSave: (values: EventFormValues, eventId?: string) => void;
-  onDelete?: (eventId: string) => void;
+  onSave: (values: EventFormValues, eventId?: string) => void | Promise<void>;
+  onDelete?: (eventId: string) => void | Promise<void>;
 }
 
 export function EventDialog({
@@ -67,6 +67,7 @@ export function EventDialog({
   onDelete,
 }: EventDialogProps) {
   const isEditMode = !!event;
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
@@ -102,15 +103,29 @@ export function EventDialog({
     }
   }, [open, event, defaultTime, form]);
 
-  const handleSubmit = (values: EventFormValues) => {
-    onSave(values, event?.id);
-    onOpenChange(false);
+  const handleSubmit = async (values: EventFormValues) => {
+    setIsSaving(true);
+    try {
+      await onSave(values, event?.id);
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Failed to save:', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (event && onDelete) {
-      onDelete(event.id);
-      onOpenChange(false);
+      setIsSaving(true);
+      try {
+        await onDelete(event.id);
+        onOpenChange(false);
+      } catch (error) {
+        console.error('Failed to delete:', error);
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -215,16 +230,22 @@ export function EventDialog({
                   variant="destructive"
                   onClick={handleDelete}
                   className="mr-auto"
+                  disabled={isSaving}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   删除
                 </Button>
               )}
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => onOpenChange(false)}
+                disabled={isSaving}
+              >
                 取消
               </Button>
-              <Button type="submit">
-                {isEditMode ? '保存' : '添加'}
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? '保存中...' : (isEditMode ? '保存' : '添加')}
               </Button>
             </DialogFooter>
           </form>

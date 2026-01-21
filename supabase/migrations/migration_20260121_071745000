@@ -1,0 +1,43 @@
+-- 创建时间轴事项表
+create table timeline_events (
+  id uuid primary key default gen_random_uuid(),
+  title text not null check (char_length(title) <= 7),
+  start_time text not null,
+  end_time text not null,
+  content text not null,
+  notes text,
+  color text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 启用行级安全
+alter table timeline_events enable row level security;
+
+-- 允许所有人读取和写入（临时策略，后续添加用户认证后会修改）
+create policy "允许所有操作"
+  on timeline_events
+  for all
+  using (true)
+  with check (true);
+
+-- 创建更新时间戳的触发器
+create or replace function update_updated_at_column()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger update_timeline_events_updated_at
+  before update on timeline_events
+  for each row
+  execute function update_updated_at_column();
+
+-- 创建索引以提高查询性能
+create index timeline_events_start_time_idx on timeline_events(start_time);
+create index timeline_events_created_at_idx on timeline_events(created_at);
+
+-- 启用实时功能
+alter publication supabase_realtime add table timeline_events;

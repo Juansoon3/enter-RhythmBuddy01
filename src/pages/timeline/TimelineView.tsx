@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { TimeSlot } from './TimeSlot';
 import { EventCard } from './EventCard';
 import { EventDialog } from './EventDialog';
@@ -11,10 +12,10 @@ import { TimelineEvent } from './types';
 import { generateTimeSlots, calculateEventColumns, roundToNearestHalfHour, timeToMinutes, TIME_SLOT_HEIGHT, getCurrentTime } from '@/lib/timeline-utils';
 import { useTimelineEvents } from '@/hooks/use-timeline-events';
 import { toast } from 'sonner';
-import { Clock } from 'lucide-react';
+import { Clock, CalendarPlus } from 'lucide-react';
 
 export function TimelineView() {
-  const { events, addEvent, updateEvent, deleteEvent } = useTimelineEvents();
+  const { events, addEvent, updateEvent, deleteEvent, isLoading } = useTimelineEvents();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
   const [defaultTime, setDefaultTime] = useState<string | undefined>();
@@ -70,25 +71,48 @@ export function TimelineView() {
   };
 
   // 保存事项
-  const handleSave = (values: Omit<TimelineEvent, 'id'>, eventId?: string) => {
-    if (eventId) {
-      updateEvent(eventId, values);
-      toast.success('事项已更新');
-    } else {
-      const newEvent = addEvent(values);
-      setLastAddedEventId(newEvent.id);
-      toast.success('事项已添加');
+  const handleSave = async (values: Omit<TimelineEvent, 'id'>, eventId?: string) => {
+    try {
+      if (eventId) {
+        await updateEvent(eventId, values);
+        toast.success('事项已更新');
+      } else {
+        const newEvent = await addEvent(values);
+        setLastAddedEventId(newEvent.id);
+        toast.success('事项已添加');
+      }
+    } catch (error) {
+      console.error('Failed to save event:', error);
+      toast.error('保存失败，请重试');
     }
   };
 
   // 删除事项
-  const handleDelete = (eventId: string) => {
-    deleteEvent(eventId);
-    toast.success('事项已删除');
+  const handleDelete = async (eventId: string) => {
+    try {
+      await deleteEvent(eventId);
+      toast.success('事项已删除');
+    } catch (error) {
+      console.error('Failed to delete event:', error);
+      toast.error('删除失败，请重试');
+    }
   };
 
   // 计算时间轴总高度 (48个时间槽 x 60px)
   const timelineHeight = timeSlots.length * 60;
+
+  // 加载状态
+  if (isLoading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Skeleton className="h-12 w-64 mx-auto" />
+          <Skeleton className="h-8 w-48 mx-auto" />
+          <p className="text-sm text-muted-foreground">加载事项中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -115,19 +139,34 @@ export function TimelineView() {
               style={{ height: `${timelineHeight}px` }}
             >
               <div className="relative h-full pointer-events-auto">
-                {events.map((event) => {
-                  const position = eventPositions.get(event.id);
-                  if (!position) return null;
+                {events.length === 0 ? (
+                  // 空状态提示
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center space-y-3 p-8 bg-muted/30 rounded-lg backdrop-blur-sm border border-border/50">
+                      <CalendarPlus className="w-12 h-12 mx-auto text-muted-foreground/50" />
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">还没有事项</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">
+                          点击时间槽或右下角按钮添加第一个事项
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  events.map((event) => {
+                    const position = eventPositions.get(event.id);
+                    if (!position) return null;
 
-                  return (
-                    <EventCard
-                      key={event.id}
-                      event={event}
-                      position={position}
-                      onClick={handleEventClick}
-                    />
-                  );
-                })}
+                    return (
+                      <EventCard
+                        key={event.id}
+                        event={event}
+                        position={position}
+                        onClick={handleEventClick}
+                      />
+                    );
+                  })
+                )}
               </div>
             </div>
 
