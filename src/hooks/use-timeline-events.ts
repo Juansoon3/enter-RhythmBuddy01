@@ -20,6 +20,7 @@ function dbEventToTimelineEvent(dbEvent: DbTimelineEvent): TimelineEvent {
     content: dbEvent.content,
     notes: dbEvent.notes || undefined,
     color: dbEvent.color || undefined,
+    eventDate: dbEvent.event_date,
   };
 }
 
@@ -34,26 +35,41 @@ function timelineEventToDbInsert(event: Omit<TimelineEvent, 'id'>): Omit<DbTimel
     content: event.content,
     notes: event.notes || null,
     color: event.color || null,
+    event_date: event.eventDate,
   };
 }
 
-export function useTimelineEvents() {
+export function useTimelineEvents(selectedDate?: Date) {
   const [events, setEvents] = useState<TimelineEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 格式化日期为 YYYY-MM-DD
+  const formatDate = (date: Date): string => {
+    return date.toISOString().split('T')[0];
+  };
+
   /**
-   * 从数据库加载所有事项
+   * 从数据库加载指定日期的事项
    */
-  const loadEvents = useCallback(async () => {
+  const loadEvents = useCallback(async (date?: Date) => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const { data, error: fetchError } = await supabase
+      let query = supabase
         .from('timeline_events')
-        .select('*')
-        .order('start_time', { ascending: true });
+        .select('*');
+
+      // 如果指定了日期，则只查询该日期的事项
+      if (date) {
+        const dateStr = formatDate(date);
+        query = query.eq('event_date', dateStr);
+      }
+
+      query = query.order('start_time', { ascending: true });
+
+      const { data, error: fetchError } = await query;
 
       if (fetchError) throw fetchError;
 
@@ -70,9 +86,11 @@ export function useTimelineEvents() {
   // 初始加载和实时订阅
   useEffect(() => {
     // 初始加载
-    loadEvents();
+    loadEvents(selectedDate);
 
     // 设置实时订阅
+    const dateStr = selectedDate ? formatDate(selectedDate) : null;
+    
     const channel = supabase
       .channel('timeline_events_changes')
       .on(
@@ -83,11 +101,21 @@ export function useTimelineEvents() {
           table: 'timeline_events',
         },
         (payload) => {
+          // 只处理当前选中日期的事项
+          const eventDate = (payload.new as DbTimelineEvent)?.event_date || 
+                           (payload.old as DbTimelineEvent)?.event_date;
+          
+          if (dateStr && eventDate !== dateStr) {
+            return; // 忽略其他日期的事项
+          }
+
           if (payload.eventType === 'INSERT') {
             const newEvent = dbEventToTimelineEvent(payload.new as DbTimelineEvent);
-            setEvents((prev) => [...prev, newEvent].sort((a, b) => 
-              a.startTime.localeCompare(b.startTime)
-            ));
+            if (!dateStr || newEvent.eventDate === dateStr) {
+              setEvents((prev) => [...prev, newEvent].sort((a, b) => 
+                a.startTime.localeCompare(b.startTime)
+              ));
+            }
           } else if (payload.eventType === 'UPDATE') {
             const updatedEvent = dbEventToTimelineEvent(payload.new as DbTimelineEvent);
             setEvents((prev) =>
@@ -105,7 +133,7 @@ export function useTimelineEvents() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [loadEvents]);
+  }, [loadEvents, selectedDate]);
 
   /**
    * 添加新事项

@@ -8,6 +8,7 @@ export interface TimelineEvent {
   content: string;               // 事项内容
   notes?: string;                // 事项备注（可选）
   color?: string;                // 事项颜色标记（可选）
+  eventDate: string;             // 事项日期 (YYYY-MM-DD格式)
 }
 
 export interface TimeSlot {

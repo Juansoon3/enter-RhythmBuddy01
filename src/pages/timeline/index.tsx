@@ -2,17 +2,18 @@
 
 import { useState } from 'react';
 import { TimelineView } from './TimelineView';
+import { DateNavigator } from './DateNavigator';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { EventDialog } from './EventDialog';
 import { useTimelineEvents } from '@/hooks/use-timeline-events';
 import { getCurrentTime } from '@/lib/timeline-utils';
 
 export default function Timeline() {
-  const { addEvent, updateEvent, deleteEvent, events } = useTimelineEvents();
-  const [currentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const { addEvent, updateEvent, deleteEvent, events } = useTimelineEvents(currentDate);
   const [fabDialogOpen, setFabDialogOpen] = useState(false);
 
   const todayEventsCount = events.length;
@@ -23,10 +24,16 @@ export default function Timeline() {
 
   const handleSave = async (values: Omit<import('./types').TimelineEvent, 'id'>, eventId?: string) => {
     try {
+      // 添加日期字段
+      const eventWithDate = {
+        ...values,
+        eventDate: format(currentDate, 'yyyy-MM-dd'),
+      };
+      
       if (eventId) {
-        await updateEvent(eventId, values);
+        await updateEvent(eventId, eventWithDate);
       } else {
-        await addEvent(values);
+        await addEvent(eventWithDate);
       }
     } catch (error) {
       console.error('Failed to save event:', error);
@@ -38,7 +45,7 @@ export default function Timeline() {
       {/* 顶部标题栏 */}
       <header className="flex-shrink-0 bg-background/80 backdrop-blur-sm border-b border-border shadow-sm">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-3">
             {/* 应用标题 */}
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-bold text-lg shadow-lg">
@@ -50,14 +57,12 @@ export default function Timeline() {
               </div>
             </div>
 
-            {/* 日期显示和统计 */}
+            {/* 日期导航和统计 */}
             <div className="flex items-center gap-3">
-              <Card className="px-4 py-2 flex items-center gap-2 bg-card/50 backdrop-blur">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium">
-                  {format(currentDate, 'yyyy年MM月dd日')}
-                </span>
-              </Card>
+              <DateNavigator 
+                currentDate={currentDate}
+                onDateChange={setCurrentDate}
+              />
               
               {todayEventsCount > 0 && (
                 <Card className="px-3 py-2 bg-primary/10 border-primary/20">
@@ -75,7 +80,7 @@ export default function Timeline() {
       <main className="flex-1 overflow-hidden">
         <div className="h-full container mx-auto px-4 py-4">
           <Card className="h-full overflow-hidden shadow-xl bg-card/95 backdrop-blur">
-            <TimelineView />
+            <TimelineView currentDate={currentDate} />
           </Card>
         </div>
       </main>

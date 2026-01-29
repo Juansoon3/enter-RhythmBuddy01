@@ -13,9 +13,14 @@ import { generateTimeSlots, calculateEventColumns, roundToNearestHalfHour, timeT
 import { useTimelineEvents } from '@/hooks/use-timeline-events';
 import { toast } from 'sonner';
 import { Clock, CalendarPlus } from 'lucide-react';
+import { format } from 'date-fns';
 
-export function TimelineView() {
-  const { events, addEvent, updateEvent, deleteEvent, isLoading } = useTimelineEvents();
+interface TimelineViewProps {
+  currentDate: Date;
+}
+
+export function TimelineView({ currentDate }: TimelineViewProps) {
+  const { events, addEvent, updateEvent, deleteEvent, isLoading } = useTimelineEvents(currentDate);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
   const [defaultTime, setDefaultTime] = useState<string | undefined>();
@@ -73,11 +78,17 @@ export function TimelineView() {
   // 保存事项
   const handleSave = async (values: Omit<TimelineEvent, 'id'>, eventId?: string) => {
     try {
+      // 确保包含日期字段
+      const eventWithDate = {
+        ...values,
+        eventDate: format(currentDate, 'yyyy-MM-dd'),
+      };
+      
       if (eventId) {
-        await updateEvent(eventId, values);
+        await updateEvent(eventId, eventWithDate);
         toast.success('事项已更新');
       } else {
-        const newEvent = await addEvent(values);
+        const newEvent = await addEvent(eventWithDate);
         setLastAddedEventId(newEvent.id);
         toast.success('事项已添加');
       }

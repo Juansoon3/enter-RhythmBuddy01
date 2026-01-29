@@ -20,6 +20,7 @@ export type Database = {
           content: string
           created_at: string | null
           end_time: string
+          event_date: string
           id: string
           notes: string | null
           start_time: string
@@ -31,6 +32,7 @@ export type Database = {
           content: string
           created_at?: string | null
           end_time: string
+          event_date?: string
           id?: string
           notes?: string | null
           start_time: string
@@ -42,6 +44,7 @@ export type Database = {
           content?: string
           created_at?: string | null
           end_time?: string
+          event_date?: string
           id?: string
           notes?: string | null
           start_time?: string

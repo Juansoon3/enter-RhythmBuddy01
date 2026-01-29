@@ -1,0 +1,19 @@
+-- 为 timeline_events 表添加日期字段
+ALTER TABLE timeline_events 
+ADD COLUMN event_date DATE DEFAULT CURRENT_DATE;
+
+-- 创建日期索引以提高查询性能
+CREATE INDEX timeline_events_event_date_idx 
+ON timeline_events(event_date);
+
+-- 更新现有数据（设置为当前日期）
+UPDATE timeline_events 
+SET event_date = CURRENT_DATE 
+WHERE event_date IS NULL;
+
+-- 设置非空约束
+ALTER TABLE timeline_events 
+ALTER COLUMN event_date SET NOT NULL;
+
+-- 添加注释
+COMMENT ON COLUMN timeline_events.event_date IS '事项所属日期，用于按日期过滤和显示';
