@@ -18,18 +18,28 @@ serve(async (req) => {
 
     const { messages, model } = await req.json();
 
-    // 添加系统提示词
-    const systemPrompt = `你是「一起喝水」时间管理应用的AI助手，名叫"小水滴"。你的职责是：
+    // 优化的系统提示词 - 明确身份信息
+    const systemPrompt = `你是「一起喝水」时间管理应用的AI助手，名叫"小水滴"。
+
+关于你的身份：
+- 你是基于阿里云通义千问大语言模型（${model || 'qwen-plus'}）构建的AI助手
+- 你可以诚实地告诉用户你是什么模型，但同时要说明你在这个应用中扮演"小水滴"的角色
+- 当用户问及你的身份时，可以回答："我是基于阿里云通义千问大模型的AI助手，在「一起喝水」应用中，大家都叫我小水滴。"
+
+你的职责：
 1. 帮助用户规划时间和管理事项
 2. 提供番茄工作法和时间管理建议
 3. 提醒用户注意休息和喝水
 4. 分析时间安排的合理性
-5. 根据对话快速创建待办事项
+5. 根据对话快速创建待办事项建议
 
-回复风格：友好、简洁、鼓励。请用中文回复。`;
+回复风格：
+- 友好、简洁、鼓励
+- 用中文回复
+- 可以使用emoji让对话更生动
+- 保持专业但不失亲和力`;
 
     // 构建阿里云百炼API格式的消息
-    // 将系统提示词和用户消息合并
     const bailianMessages = messages.map((msg: any, index: number) => {
       if (index === 0) {
         // 第一条消息添加系统提示
@@ -53,7 +63,7 @@ serve(async (req) => {
         "X-DashScope-SSE": "enable", // 启用SSE流式输出
       },
       body: JSON.stringify({
-        model: model || "qwen-plus", // 默认使用qwen-plus，也可以是qwen-turbo, qwen-max等
+        model: model || "qwen-plus",
         input: {
           messages: bailianMessages
         },
@@ -87,67 +97,7 @@ serve(async (req) => {
       });
     }
 
-    // 转换阿里云百炼的SSE格式到我们的格式
-    const transformStream = new TransformStream({
-      transform(chunk, controller) {
-        const text = new TextDecoder().decode(chunk);
-        const lines = text.split('\n');
-        
-        for (const line of lines) {
-          if (line.startsWith('data:')) {
-            try {
-              const data = JSON.parse(line.slice(5));
-              
-              // 处理阿里云百炼的响应格式
-              if (data.output && data.output.choices && data.output.choices[0]) {
-                const choice = data.output.choices[0];
-                const content = choice.message?.content || '';
-                const finishReason = choice.finish_reason;
-                
-                if (content) {
-                  // 转换为类似Claude的格式
-                  // 第一次输出时发送 message_start 和 content_block_start
-                  if (!controller.desiredSize || controller.desiredSize > 0) {
-                    // 发送内容增量
-                    const delta = {
-                      type: "content_block_delta",
-                      index: 0,
-                      delta: {
-                        type: "text_delta",
-                        text: content
-                      }
-                    };
-                    controller.enqueue(new TextEncoder().encode(`event: content_block_delta\ndata: ${JSON.stringify(delta)}\n\n`));
-                  }
-                }
-                
-                // 结束标记
-                if (finishReason === 'stop') {
-                  const stop = { type: "message_stop" };
-                  controller.enqueue(new TextEncoder().encode(`event: message_stop\ndata: ${JSON.stringify(stop)}\n\n`));
-                }
-              }
-              
-              // 处理错误
-              if (data.code && data.code !== '200') {
-                const error = {
-                  type: "error",
-                  error: {
-                    type: "api_error",
-                    message: data.message || "服务错误"
-                  }
-                };
-                controller.enqueue(new TextEncoder().encode(`event: error\ndata: ${JSON.stringify(error)}\n\n`));
-              }
-            } catch (e) {
-              // 忽略解析错误，可能是不完整的chunk
-            }
-          }
-        }
-      }
-    });
-
-    // 发送初始事件
+    // 发送初始事件并转换流式响应
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
       async start(controller) {
