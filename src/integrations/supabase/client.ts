@@ -5,6 +5,10 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://gdhfqauarqljqexflqtt.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkaGZxYXVhcnFsanFleGZscXR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5NzY5MDMsImV4cCI6MjA4NDU1MjkwM30.hFlN-cWrUIe7v_y0QQmrwMDAnAWT9u9knI9UQ6FmDTw";
 
+// Export constants for use in other parts of the app
+export const SUPABASE_URL_CONST = SUPABASE_URL;
+export const SUPABASE_ANON_KEY = SUPABASE_PUBLISHABLE_KEY;
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
@@ -15,3 +19,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   }
 });
+
+// For convenience, also export with shorter names
+export { SUPABASE_URL_CONST as SUPABASE_URL };

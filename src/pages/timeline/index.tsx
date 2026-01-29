@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { TimelineView } from './TimelineView';
 import { DateNavigator } from './DateNavigator';
+import { AIChatButton } from '@/components/ai-assistant/AIChatButton';
+import { AIChatWindow } from '@/components/ai-assistant/AIChatWindow';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
@@ -15,6 +17,7 @@ export default function Timeline() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { addEvent, updateEvent, deleteEvent, events } = useTimelineEvents(currentDate);
   const [fabDialogOpen, setFabDialogOpen] = useState(false);
+  const [aiChatOpen, setAiChatOpen] = useState(false);
 
   const todayEventsCount = events.length;
 
@@ -88,11 +91,22 @@ export default function Timeline() {
       {/* 悬浮添加按钮 (FAB) */}
       <Button
         size="lg"
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transition-all hover:scale-110"
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transition-all hover:scale-110 z-40"
         onClick={handleFabClick}
       >
         <Plus className="w-6 h-6" />
       </Button>
+
+      {/* AI助理悬浮球 */}
+      <AIChatButton 
+        onClick={() => setAiChatOpen(!aiChatOpen)}
+        isOpen={aiChatOpen}
+      />
+
+      {/* AI聊天窗口 */}
+      {aiChatOpen && (
+        <AIChatWindow onClose={() => setAiChatOpen(false)} />
+      )}
 
       {/* FAB 对话框 */}
       <EventDialog

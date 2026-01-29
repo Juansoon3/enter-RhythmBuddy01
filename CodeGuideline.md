@@ -37,10 +37,12 @@ project-root/
 
 - **public/**: Static files served directly. Place images, icons, and robots.txt here.
 - **src/components/**: All UI components.  
-  - **ui/**: Contains atomic and composite UI components.  
+  - **ui/**: Contains atomic and composite UI components.
+  - **ai-assistant/**: AI chat assistant components (floating button, chat window, messages)
   - *Group related components into subdirectories if they share a domain or feature (e.g., `form/`, `charts/`).*
 - **src/hooks/**: Custom React hooks. Each file should export a single hook focused on one responsibility.
-  - **use-timeline-events.ts**: Manages timeline events with Supabase integration and real-time updates
+  - **use-timeline-events.ts**: Manages timeline events with Supabase integration and real-time updates (date-filtered)
+  - **use-ai-chat.ts**: AI chat conversation management with streaming support
 - **src/lib/**: Utility functions and libraries that are not React components or hooks.
   - **timeline-utils.ts**: Timeline-specific utilities for time calculations and event positioning
 - **src/integrations/**: Third-party service integrations
@@ -48,11 +50,14 @@ project-root/
 - **src/pages/**: All route-level pages.  
   - *Each page should have its own subdirectory if it contains more than a single file or has related logic/components.*
   - **timeline/**: Main timeline page for the "一起喝水" app with time management features
+    - **DateNavigator.tsx**: Date picker and navigation component
 - **src/App.tsx**: Sets up global providers.
 - **src/router.tsx**: Sets up routing.
 - **src/main.tsx**: Application entry point.
 - **supabase/**: Supabase configuration and migrations
   - **migrations/**: Database migration files
+  - **functions/**: Supabase Edge Functions (serverless)
+    - **ai-chat-725f16b9a779/**: AI chat endpoint using Claude API
 
 **Important:**
 Whenever a new module (such as a component, hook, or utility) or a new page is added or removed, this document **must be updated immediately** to reflect the changes. Keeping this documentation up to date ensures that all collaborators have a clear understanding of the current project structure and its intended organization.
