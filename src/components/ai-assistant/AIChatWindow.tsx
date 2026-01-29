@@ -4,9 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChatMessage } from './ChatMessage';
 import { useAIChat } from '@/hooks/use-ai-chat';
-import { Send, X, Trash2, Sparkles } from 'lucide-react';
+import { Send, X, Trash2, Sparkles, Settings } from 'lucide-react';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -16,12 +17,15 @@ interface AIChatWindowProps {
 
 export function AIChatWindow({ onClose }: AIChatWindowProps) {
   const [input, setInput] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('qwen-plus');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
   const { messages, isLoading, error, sendMessage, clearMessages } = useAIChat({
     supabaseUrl: SUPABASE_URL,
     supabaseAnonKey: SUPABASE_ANON_KEY,
+    model: selectedModel,
   });
 
   // 自动滚动到底部
@@ -62,10 +66,18 @@ export function AIChatWindow({ onClose }: AIChatWindowProps) {
           </div>
           <div>
             <h3 className="font-semibold text-sm">小水滴助手</h3>
-            <p className="text-xs text-muted-foreground">时间管理小帮手</p>
+            <p className="text-xs text-muted-foreground">阿里云百炼 · {getModelName(selectedModel)}</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => setShowSettings(!showSettings)}
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
           {messages.length > 0 && (
             <Button
               variant="ghost"
@@ -87,6 +99,29 @@ export function AIChatWindow({ onClose }: AIChatWindowProps) {
           </Button>
         </div>
       </div>
+
+      {/* 设置面板 */}
+      {showSettings && (
+        <div className="px-4 py-3 border-b bg-muted/20">
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">选择模型</label>
+            <Select value={selectedModel} onValueChange={setSelectedModel}>
+              <SelectTrigger className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="qwen-turbo">通义千问-Turbo（快速）</SelectItem>
+                <SelectItem value="qwen-plus">通义千问-Plus（均衡）⭐</SelectItem>
+                <SelectItem value="qwen-max">通义千问-Max（高质量）</SelectItem>
+                <SelectItem value="qwen-long">通义千问-Long（长文本）</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              切换模型后，新对话将使用选择的模型
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* 消息列表 */}
       <ScrollArea className="flex-1" ref={scrollAreaRef}>
@@ -149,4 +184,14 @@ export function AIChatWindow({ onClose }: AIChatWindowProps) {
       </form>
     </div>
   );
+}
+
+function getModelName(model: string): string {
+  const modelNames: Record<string, string> = {
+    'qwen-turbo': 'Turbo',
+    'qwen-plus': 'Plus',
+    'qwen-max': 'Max',
+    'qwen-long': 'Long',
+  };
+  return modelNames[model] || model;
 }
