@@ -3,15 +3,15 @@
 import { useState } from 'react';
 import { TimelineView } from './TimelineView';
 import { DateNavigator } from './DateNavigator';
-import { AIChatButton } from '@/components/ai-assistant/AIChatButton';
 import { AIChatWindow } from '@/components/ai-assistant/AIChatWindow';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { EventDialog } from './EventDialog';
 import { useTimelineEvents } from '@/hooks/use-timeline-events';
 import { getCurrentTime } from '@/lib/timeline-utils';
+import { cn } from '@/lib/utils';
 
 export default function Timeline() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -97,11 +97,28 @@ export default function Timeline() {
         <Plus className="w-6 h-6" />
       </Button>
 
-      {/* AI助理悬浮球 */}
-      <AIChatButton 
+      {/* AI助理悬浮球（简化版-固定定位） */}
+      <Button
+        size="lg"
+        className={cn(
+          "fixed bottom-24 right-6 h-14 w-14 rounded-full shadow-2xl transition-all z-40",
+          aiChatOpen 
+            ? "bg-primary/90 ring-4 ring-primary/20 hover:scale-105" 
+            : "bg-gradient-to-br from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 hover:scale-110"
+        )}
         onClick={() => setAiChatOpen(!aiChatOpen)}
-        isOpen={aiChatOpen}
-      />
+        title={aiChatOpen ? "关闭AI助手" : "打开AI助手"}
+      >
+        <Sparkles className={cn(
+          "w-6 h-6 text-white transition-transform",
+          aiChatOpen && "rotate-180"
+        )} />
+        
+        {/* 呼吸灯效果（仅在关闭状态） */}
+        {!aiChatOpen && (
+          <span className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 animate-ping opacity-20" />
+        )}
+      </Button>
 
       {/* AI聊天窗口 */}
       {aiChatOpen && (

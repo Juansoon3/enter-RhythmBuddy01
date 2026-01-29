@@ -40,7 +40,7 @@ serve(async (req) => {
 - 保持专业但不失亲和力`;
 
     // 构建阿里云百炼API格式的消息
-    const bailianMessages = messages.map((msg: any, index: number) => {
+    const bailianMessages = messages.map((msg: { role: string; content: string }, index: number) => {
       if (index === 0) {
         // 第一条消息添加系统提示
         return {

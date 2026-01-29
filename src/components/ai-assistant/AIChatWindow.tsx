@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChatMessage } from './ChatMessage';
 import { useAIChat } from '@/hooks/use-ai-chat';
-import { Send, X, Trash2, Sparkles, Settings } from 'lucide-react';
+import { Send, X, Trash2, Sparkles, Settings, Minimize2 } from 'lucide-react';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -57,7 +57,7 @@ export function AIChatWindow({ onClose }: AIChatWindowProps) {
   };
 
   return (
-    <div className="fixed bottom-24 right-6 w-96 h-[600px] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden z-50 animate-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed inset-x-4 bottom-20 md:inset-x-auto md:bottom-28 md:right-6 md:w-96 w-auto h-[calc(100vh-10rem)] md:h-[600px] max-h-[calc(100vh-10rem)] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden z-50 animate-in slide-in-from-bottom-4 duration-300">
       {/* 头部 */}
       <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-cyan-500/10 to-blue-500/10">
         <div className="flex items-center gap-2">
@@ -85,6 +85,7 @@ export function AIChatWindow({ onClose }: AIChatWindowProps) {
               className="h-8 w-8"
               onClick={handleClear}
               disabled={isLoading}
+              title="清空对话"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -94,6 +95,16 @@ export function AIChatWindow({ onClose }: AIChatWindowProps) {
             size="icon"
             className="h-8 w-8"
             onClick={onClose}
+            title="最小化"
+          >
+            <Minimize2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 md:hidden"
+            onClick={onClose}
+            title="关闭"
           >
             <X className="h-4 w-4" />
           </Button>
